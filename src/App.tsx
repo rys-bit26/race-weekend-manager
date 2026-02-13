@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from './store/appStore';
 import { useFilterStore } from './store/filterStore';
+import { useNotificationStore } from './store/notificationStore';
 import { useActiveWeekend } from './hooks/useRaceWeekend';
 import { useActivities, filterActivities } from './hooks/useActivities';
 import { useMasterSchedule } from './hooks/useMasterSchedule';
 import { usePeople } from './hooks/usePeople';
+import { useNotificationScheduler } from './hooks/useNotificationScheduler';
 import { searchActivities } from './services/search/SearchService';
 import { seedDatabase } from './db/seed';
 import { DayTabBar } from './components/schedule/DayTabBar';
@@ -16,6 +18,10 @@ import { ExportDialog } from './components/export/ExportDialog';
 import { FilterBar } from './components/filters/FilterBar';
 import { EventSelector } from './components/header/EventSelector';
 import { AddEventModal } from './components/header/AddEventModal';
+import { NotificationBell } from './components/notifications/NotificationBell';
+import { NotificationToast } from './components/notifications/NotificationToast';
+import { PersonSelector } from './components/notifications/PersonSelector';
+import { NotificationPreferencesModal } from './components/notifications/NotificationPreferencesModal';
 import type { Activity } from './types/activity';
 import {
   LayoutGrid,
@@ -32,22 +38,35 @@ function App() {
   const { activeView, setActiveView, activeDay, sidebarOpen, setSidebarOpen } =
     useAppStore();
   const filters = useFilterStore();
+  const activePersonId = useNotificationStore((s) => s.activePersonId);
 
   const { activeWeekend, activeWeekendId, weekends, setActiveWeekendId } = useActiveWeekend();
   const { activities, addActivity, updateActivity, deleteActivity } = useActivities(activeWeekendId);
   const { events: masterEvents } = useMasterSchedule(activeWeekendId);
   const { people } = usePeople();
 
+  // Start notification scheduler
+  useNotificationScheduler(activeWeekendId);
+
   const [activityModalOpen, setActivityModalOpen] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [addEventOpen, setAddEventOpen] = useState(false);
+  const [prefsOpen, setPrefsOpen] = useState(false);
+  const [personSelectorOpen, setPersonSelectorOpen] = useState(false);
 
   // Seed database on first load
   useEffect(() => {
     seedDatabase();
   }, []);
+
+  // Show person selector on first visit if no person selected
+  useEffect(() => {
+    if (!activePersonId && people.length > 0) {
+      setPersonSelectorOpen(true);
+    }
+  }, [activePersonId, people.length]);
 
   // Apply filters and search
   const filteredActivities = useMemo(() => {
@@ -159,6 +178,10 @@ function App() {
             >
               <Download size={18} />
             </button>
+            <NotificationBell
+              weekendId={activeWeekendId}
+              onOpenPreferences={() => setPrefsOpen(true)}
+            />
             <button
               onClick={handleNewActivity}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
@@ -254,6 +277,20 @@ function App() {
         onCreated={(id) => setActiveWeekendId(id)}
       />
 
+      <PersonSelector
+        open={personSelectorOpen}
+        people={people}
+        onClose={() => setPersonSelectorOpen(false)}
+      />
+
+      <NotificationPreferencesModal
+        open={prefsOpen}
+        onClose={() => setPrefsOpen(false)}
+        weekendId={activeWeekendId}
+        activities={activities}
+        people={people}
+      />
+
       {activeWeekendId && (
         <>
           <ActivityModal
@@ -299,6 +336,9 @@ function App() {
           )}
         </>
       )}
+
+      {/* Toast overlay */}
+      <NotificationToast />
     </div>
   );
 }

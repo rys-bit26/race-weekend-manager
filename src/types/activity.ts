@@ -26,6 +26,8 @@ export interface Person {
   departmentId: DepartmentId;
   role?: string;
   email?: string;
+  phoneNumber?: string;
+  smsOptIn?: boolean;
 }
 
 export interface Activity {

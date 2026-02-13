@@ -87,6 +87,19 @@ export const LOCATIONS = [
   'Other',
 ];
 
+export const REMINDER_TIMINGS = [
+  { value: 5, label: '5 minutes before' },
+  { value: 15, label: '15 minutes before' },
+  { value: 30, label: '30 minutes before' },
+  { value: 60, label: '1 hour before' },
+] as const;
+
+export const NOTIFICATION_CHANNELS = [
+  { id: 'in-app' as const, label: 'In-app alerts', available: true },
+  { id: 'ics' as const, label: 'Calendar (.ics)', available: true },
+  { id: 'sms' as const, label: 'SMS', available: false },
+] as const;
+
 export const SERIES_COLORS: Record<string, string> = {
   INDYCAR: '#D4A017',
   INDY_NXT: '#22C55E',
