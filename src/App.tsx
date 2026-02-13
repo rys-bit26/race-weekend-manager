@@ -11,7 +11,7 @@ import { DayTabBar } from './components/schedule/DayTabBar';
 import { ExecutiveView } from './components/schedule/ExecutiveView';
 import { DetailedView } from './components/schedule/DetailedView';
 import { ActivityModal } from './components/activity/ActivityModal';
-import { PdfImportDialog } from './components/import/PdfImportDialog';
+import { ImportDialog } from './components/import/ImportDialog';
 import { ExportDialog } from './components/export/ExportDialog';
 import { FilterBar } from './components/filters/FilterBar';
 import { EventSelector } from './components/header/EventSelector';
@@ -148,7 +148,7 @@ function App() {
             <button
               onClick={() => setImportOpen(true)}
               className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-              title="Import PDF"
+              title="Import Schedule"
             >
               <FileUp size={18} />
             </button>
@@ -281,7 +281,7 @@ function App() {
             weekendId={activeWeekendId}
           />
 
-          <PdfImportDialog
+          <ImportDialog
             open={importOpen}
             onClose={() => setImportOpen(false)}
             weekendId={activeWeekendId}

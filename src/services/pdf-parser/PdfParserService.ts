@@ -1,32 +1,15 @@
-import * as pdfjsLib from 'pdfjs-dist';
 import type { PdfTextItem, PdfParseResult, ParsedScheduleEvent } from '../../types/pdf';
 import type { DayOfWeek, SeriesType } from '../../types/schedule';
 import { parseTimeString } from '../../utils/time';
-
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
-
-const DAY_PATTERNS: { day: DayOfWeek; patterns: RegExp[] }[] = [
-  { day: 'wednesday', patterns: [/wednesday/i, /\bwed\b/i] },
-  { day: 'thursday', patterns: [/thursday/i, /\bthu/i] },
-  { day: 'friday', patterns: [/friday/i, /\bfri\b/i] },
-  { day: 'saturday', patterns: [/saturday/i, /\bsat\b/i] },
-  { day: 'sunday', patterns: [/sunday/i, /\bsun\b/i] },
-];
+import { detectDay, TIME_RANGE_PATTERN, extractTextItems } from './pdfUtils';
 
 const SERIES_KEYWORDS: { series: SeriesType; patterns: string[] }[] = [
   { series: 'INDYCAR', patterns: ['NTT INDYCAR', 'INDYCAR SERIES', 'NICS'] },
   { series: 'INDY_NXT', patterns: ['INDY NXT', 'INXT'] },
-  { series: 'USF2000', patterns: ['USF2000', 'USF 2000'] },
+  { series: 'USF2000', patterns: ['USF2000', 'USF 2000', 'USF PRO'] },
   { series: 'MX5_CUP', patterns: ['MX-5', 'MX5', 'MAZDA'] },
   { series: 'NCTS', patterns: ['NCTS', 'NASCAR', 'CRAFTSMAN TRUCK'] },
 ];
-
-const TIME_RANGE_PATTERN =
-  /(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)\s*[-–]\s*(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)/;
 
 function classifySeries(text: string): SeriesType {
   const upper = text.toUpperCase();
@@ -38,42 +21,12 @@ function classifySeries(text: string): SeriesType {
   return 'GENERAL';
 }
 
-function detectDay(text: string): DayOfWeek | null {
-  for (const { day, patterns } of DAY_PATTERNS) {
-    for (const pattern of patterns) {
-      if (pattern.test(text)) return day;
-    }
-  }
-  return null;
-}
-
 export async function parsePdf(fileData: ArrayBuffer): Promise<PdfParseResult> {
   const warnings: string[] = [];
   const events: ParsedScheduleEvent[] = [];
 
   try {
-    const doc = await pdfjsLib.getDocument({ data: fileData }).promise;
-    const allItems: PdfTextItem[] = [];
-
-    for (let pageNum = 1; pageNum <= doc.numPages; pageNum++) {
-      const page = await doc.getPage(pageNum);
-      const textContent = await page.getTextContent();
-
-      for (const item of textContent.items) {
-        if ('str' in item && item.str.trim()) {
-          allItems.push({
-            str: item.str,
-            x: item.transform[4],
-            y: item.transform[5],
-            width: item.width ?? 0,
-            height: item.height ?? 0,
-            fontName: ('fontName' in item ? item.fontName : '') as string,
-            fontSize: Math.abs(item.transform[0]),
-            page: pageNum,
-          });
-        }
-      }
-    }
+    const { items: allItems, pageCount } = await extractTextItems(fileData);
 
     // Detect columns by finding day headers and clustering x-positions
     const columns = detectColumns(allItems);
@@ -93,7 +46,7 @@ export async function parsePdf(fileData: ArrayBuffer): Promise<PdfParseResult> {
     return {
       events,
       warnings,
-      pageCount: doc.numPages,
+      pageCount,
       rawItemCount: allItems.length,
     };
   } catch (err) {
