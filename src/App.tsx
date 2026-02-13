@@ -14,6 +14,8 @@ import { ActivityModal } from './components/activity/ActivityModal';
 import { PdfImportDialog } from './components/import/PdfImportDialog';
 import { ExportDialog } from './components/export/ExportDialog';
 import { FilterBar } from './components/filters/FilterBar';
+import { EventSelector } from './components/header/EventSelector';
+import { AddEventModal } from './components/header/AddEventModal';
 import type { Activity } from './types/activity';
 import {
   LayoutGrid,
@@ -31,7 +33,7 @@ function App() {
     useAppStore();
   const filters = useFilterStore();
 
-  const { activeWeekend, activeWeekendId } = useActiveWeekend();
+  const { activeWeekend, activeWeekendId, weekends, setActiveWeekendId } = useActiveWeekend();
   const { activities, addActivity, updateActivity, deleteActivity } = useActivities(activeWeekendId);
   const { events: masterEvents } = useMasterSchedule(activeWeekendId);
   const { people } = usePeople();
@@ -40,6 +42,7 @@ function App() {
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [addEventOpen, setAddEventOpen] = useState(false);
 
   // Seed database on first load
   useEffect(() => {
@@ -105,12 +108,12 @@ function App() {
 
             <div className="flex items-center gap-2">
               <Flag size={20} className="text-indigo-400" />
-              <div>
-                <h1 className="text-sm font-bold tracking-tight">Race Schedule</h1>
-                {activeWeekend && (
-                  <p className="text-[11px] text-slate-400">{activeWeekend.name}</p>
-                )}
-              </div>
+              <EventSelector
+                weekends={weekends}
+                activeWeekend={activeWeekend}
+                onSelect={setActiveWeekendId}
+                onAddNew={() => setAddEventOpen(true)}
+              />
             </div>
           </div>
 
@@ -245,6 +248,12 @@ function App() {
       </div>
 
       {/* Modals */}
+      <AddEventModal
+        open={addEventOpen}
+        onClose={() => setAddEventOpen(false)}
+        onCreated={(id) => setActiveWeekendId(id)}
+      />
+
       {activeWeekendId && (
         <>
           <ActivityModal

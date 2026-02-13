@@ -30,6 +30,19 @@ export class ScheduleDatabase extends Dexie {
       await tx.table('activities').clear();
       await tx.table('people').clear();
     });
+
+    // v3: add Phoenix + Arlington events
+    this.version(3).stores({
+      raceWeekends: 'id, name, startDate',
+      masterEvents: 'id, weekendId, day, startTime, series',
+      activities: 'id, weekendId, day, startTime, status, *departmentIds, *personIds',
+      people: 'id, departmentId, name',
+    }).upgrade(async (tx) => {
+      await tx.table('raceWeekends').clear();
+      await tx.table('masterEvents').clear();
+      await tx.table('activities').clear();
+      await tx.table('people').clear();
+    });
   }
 }
 

@@ -1,5 +1,10 @@
 // @ts-expect-error pdfmake has no type declarations
 import pdfMake from 'pdfmake/build/pdfmake';
+// @ts-expect-error pdfmake has no type declarations
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+
+pdfMake.vfs = pdfFonts.pdfMake?.vfs ?? pdfFonts.vfs ?? pdfFonts;
+
 import { DEPARTMENT_MAP, DAYS } from '../../utils/constants';
 import { formatTime } from '../../utils/time';
 import type { Activity, Person } from '../../types/activity';
