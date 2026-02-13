@@ -4,10 +4,31 @@ import { resolveActivityDate } from '../../utils/dateResolve';
 import { generateId } from '../../utils/id';
 
 /**
- * Format a Date as an ICS datetime string (UTC): 20260315T140000Z
+ * Get the IANA timezone string for the user's browser (e.g. "America/New_York").
  */
-function toIcsDate(date: Date): string {
-  return format(date, "yyyyMMdd'T'HHmmss'Z'");
+function getLocalTimezone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
+/**
+ * Format a Date as an ICS local datetime string (NO "Z" suffix): 20260315T180000
+ * Must be paired with a TZID parameter so calendar apps interpret
+ * the time in the correct timezone rather than as UTC.
+ */
+function toIcsLocalDate(date: Date): string {
+  return format(date, "yyyyMMdd'T'HHmmss");
+}
+
+/**
+ * Format a Date as a true UTC datetime string: 20260315T230000Z
+ * Used only for DTSTAMP, which the ICS spec requires to be in UTC.
+ */
+function toIcsUtcDate(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return (
+    `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}` +
+    `T${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}Z`
+  );
 }
 
 /**
@@ -42,6 +63,7 @@ export async function generateIcsForPerson(
     throw new Error('No subscribed activities to export');
   }
 
+  const tz = getLocalTimezone();
   const events: string[] = [];
 
   for (const sub of subs) {
@@ -60,14 +82,14 @@ export async function generateIcsForPerson(
     );
 
     const uid = `${activity.id}-${generateId()}@race-weekend-manager`;
-    const now = toIcsDate(new Date());
+    const now = toIcsUtcDate(new Date());
 
     let vevent = [
       'BEGIN:VEVENT',
       `UID:${uid}`,
       `DTSTAMP:${now}`,
-      `DTSTART:${toIcsDate(startDate)}`,
-      `DTEND:${toIcsDate(endDate)}`,
+      `DTSTART;TZID=${tz}:${toIcsLocalDate(startDate)}`,
+      `DTEND;TZID=${tz}:${toIcsLocalDate(endDate)}`,
       `SUMMARY:${escapeIcs(activity.name)}`,
     ];
 
@@ -101,6 +123,7 @@ export async function generateIcsForPerson(
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     `X-WR-CALNAME:${escapeIcs(weekend.name)} Schedule`,
+    `X-WR-TIMEZONE:${tz}`,
     ...events,
     'END:VCALENDAR',
   ].join('\r\n');
