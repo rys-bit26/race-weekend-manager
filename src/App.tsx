@@ -9,9 +9,11 @@ import { usePeople } from './hooks/usePeople';
 import { useNotificationScheduler } from './hooks/useNotificationScheduler';
 import { searchActivities } from './services/search/SearchService';
 import { seedDatabase } from './db/seed';
+import { DAYS } from './utils/constants';
 import { DayTabBar } from './components/schedule/DayTabBar';
 import { ExecutiveView } from './components/schedule/ExecutiveView';
-import { DetailedView } from './components/schedule/DetailedView';
+import { AndrettiView } from './components/schedule/AndrettiView';
+import { SequentialView } from './components/schedule/SequentialView';
 import { ActivityModal } from './components/activity/ActivityModal';
 import { ImportDialog } from './components/import/ImportDialog';
 import { ExportDialog } from './components/export/ExportDialog';
@@ -25,7 +27,8 @@ import { NotificationPreferencesModal } from './components/notifications/Notific
 import type { Activity } from './types/activity';
 import {
   LayoutGrid,
-  GanttChart,
+  Users,
+  List,
   Plus,
   FileUp,
   Download,
@@ -84,7 +87,13 @@ function App() {
     return result;
   }, [activities, filters, people]);
 
-  // Day-filtered master events for detailed view
+  // Current day label for single-day views
+  const dayLabel = useMemo(
+    () => DAYS.find((d) => d.id === activeDay)?.label ?? activeDay,
+    [activeDay]
+  );
+
+  // Day-filtered data for single-day views (Andretti Only, Sequential)
   const dayMasterEvents = useMemo(
     () =>
       masterEvents
@@ -148,18 +157,29 @@ function App() {
                 }`}
               >
                 <LayoutGrid size={14} />
-                Executive
+                Full Team Schedule
               </button>
               <button
-                onClick={() => setActiveView('detailed')}
+                onClick={() => setActiveView('andretti')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                  activeView === 'detailed'
+                  activeView === 'andretti'
                     ? 'bg-indigo-600 text-white'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <GanttChart size={14} />
-                Timeline
+                <Users size={14} />
+                Andretti Only
+              </button>
+              <button
+                onClick={() => setActiveView('sequential')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  activeView === 'sequential'
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <List size={14} />
+                Sequential
               </button>
             </div>
 
@@ -196,25 +216,36 @@ function App() {
         <div className="sm:hidden flex items-center bg-slate-800 mx-4 mb-2 rounded-lg p-0.5">
           <button
             onClick={() => setActiveView('executive')}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
               activeView === 'executive'
                 ? 'bg-indigo-600 text-white'
                 : 'text-slate-400'
             }`}
           >
             <LayoutGrid size={14} />
-            Executive
+            Full
           </button>
           <button
-            onClick={() => setActiveView('detailed')}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              activeView === 'detailed'
+            onClick={() => setActiveView('andretti')}
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              activeView === 'andretti'
                 ? 'bg-indigo-600 text-white'
                 : 'text-slate-400'
             }`}
           >
-            <GanttChart size={14} />
-            Timeline
+            <Users size={14} />
+            Andretti
+          </button>
+          <button
+            onClick={() => setActiveView('sequential')}
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              activeView === 'sequential'
+                ? 'bg-indigo-600 text-white'
+                : 'text-slate-400'
+            }`}
+          >
+            <List size={14} />
+            Sequential
           </button>
         </div>
       </header>
@@ -259,12 +290,20 @@ function App() {
               people={people}
               onEditActivity={handleEditActivity}
             />
+          ) : activeView === 'andretti' ? (
+            <AndrettiView
+              activities={dayActivities}
+              people={people}
+              onEditActivity={handleEditActivity}
+              dayLabel={dayLabel}
+            />
           ) : (
-            <DetailedView
+            <SequentialView
               activities={dayActivities}
               masterEvents={dayMasterEvents}
               people={people}
               onEditActivity={handleEditActivity}
+              dayLabel={dayLabel}
             />
           )}
         </main>

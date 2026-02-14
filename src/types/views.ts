@@ -1,4 +1,4 @@
-export type ViewType = 'executive' | 'detailed';
+export type ViewType = 'executive' | 'andretti' | 'sequential';
 
 export type TimeInterval = 15 | 30 | 60;
 
