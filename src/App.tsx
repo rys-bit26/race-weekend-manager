@@ -26,6 +26,7 @@ import { NotificationToast } from './components/notifications/NotificationToast'
 import { PersonSelector } from './components/notifications/PersonSelector';
 import { NotificationPreferencesModal } from './components/notifications/NotificationPreferencesModal';
 import type { Activity } from './types/activity';
+import type { DayOfWeek } from './types/schedule';
 import {
   LayoutGrid,
   Users,
@@ -123,6 +124,10 @@ function App() {
   const handleNewActivity = () => {
     setEditingActivity(null);
     setActivityModalOpen(true);
+  };
+
+  const handleMoveActivity = async (activityId: string, newDay: DayOfWeek) => {
+    await updateActivity(activityId, { day: newDay });
   };
 
   return (
@@ -297,12 +302,14 @@ function App() {
               masterEvents={masterEvents}
               people={people}
               onEditActivity={handleEditActivity}
+              onMoveActivity={handleMoveActivity}
             />
           ) : activeView === 'andretti' ? (
             <AndrettiView
               activities={viewActivities}
               people={people}
               onEditActivity={handleEditActivity}
+              onMoveActivity={handleMoveActivity}
               dayLabel={dayLabel}
               fullWeek={showFullWeek}
             />
@@ -312,6 +319,7 @@ function App() {
               masterEvents={viewMasterEvents}
               people={people}
               onEditActivity={handleEditActivity}
+              onMoveActivity={handleMoveActivity}
               dayLabel={dayLabel}
               fullWeek={showFullWeek}
             />
