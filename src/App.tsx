@@ -13,7 +13,7 @@ import { DAYS } from './utils/constants';
 import { DayTabBar } from './components/schedule/DayTabBar';
 import { ExecutiveView } from './components/schedule/ExecutiveView';
 import { AndrettiView } from './components/schedule/AndrettiView';
-import { SequentialView } from './components/schedule/SequentialView';
+import { DailyView } from './components/schedule/DailyView';
 import { ActivityModal } from './components/activity/ActivityModal';
 import { ImportDialog } from './components/import/ImportDialog';
 import { ExportDialog } from './components/export/ExportDialog';
@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 
 function App() {
-  const { activeView, setActiveView, activeDay, sidebarOpen, setSidebarOpen } =
+  const { activeView, setActiveView, activeDay, showFullWeek, sidebarOpen, setSidebarOpen } =
     useAppStore();
   const filters = useFilterStore();
   const activePersonId = useNotificationStore((s) => s.activePersonId);
@@ -93,7 +93,7 @@ function App() {
     [activeDay]
   );
 
-  // Day-filtered data for single-day views (Andretti Only, Sequential)
+  // Day-filtered data for single-day views (Andretti Only, Daily)
   const dayMasterEvents = useMemo(
     () =>
       masterEvents
@@ -109,6 +109,10 @@ function App() {
         .sort((a, b) => a.startTime.localeCompare(b.startTime)),
     [filteredActivities, activeDay]
   );
+
+  // Pick day-filtered vs full data based on showFullWeek
+  const viewActivities = showFullWeek ? filteredActivities : dayActivities;
+  const viewMasterEvents = showFullWeek ? masterEvents : dayMasterEvents;
 
   const handleEditActivity = (activity: Activity) => {
     setEditingActivity(activity);
@@ -171,15 +175,15 @@ function App() {
                 Andretti Only
               </button>
               <button
-                onClick={() => setActiveView('sequential')}
+                onClick={() => setActiveView('daily')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                  activeView === 'sequential'
+                  activeView === 'daily'
                     ? 'bg-indigo-600 text-white'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <List size={14} />
-                Sequential
+                Daily
               </button>
             </div>
 
@@ -237,15 +241,15 @@ function App() {
             Andretti
           </button>
           <button
-            onClick={() => setActiveView('sequential')}
+            onClick={() => setActiveView('daily')}
             className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              activeView === 'sequential'
+              activeView === 'daily'
                 ? 'bg-indigo-600 text-white'
                 : 'text-slate-400'
             }`}
           >
             <List size={14} />
-            Sequential
+            Daily
           </button>
         </div>
       </header>
@@ -292,18 +296,20 @@ function App() {
             />
           ) : activeView === 'andretti' ? (
             <AndrettiView
-              activities={dayActivities}
+              activities={viewActivities}
               people={people}
               onEditActivity={handleEditActivity}
               dayLabel={dayLabel}
+              fullWeek={showFullWeek}
             />
           ) : (
-            <SequentialView
-              activities={dayActivities}
-              masterEvents={dayMasterEvents}
+            <DailyView
+              activities={viewActivities}
+              masterEvents={viewMasterEvents}
               people={people}
               onEditActivity={handleEditActivity}
               dayLabel={dayLabel}
+              fullWeek={showFullWeek}
             />
           )}
         </main>

@@ -6,11 +6,13 @@ import type { LaneMode } from '../types/views';
 interface AppState {
   activeView: ViewType;
   activeDay: DayOfWeek;
+  showFullWeek: boolean;
   laneMode: LaneMode;
   sidebarOpen: boolean;
   pixelsPerMinute: number;
   setActiveView: (view: ViewType) => void;
   setActiveDay: (day: DayOfWeek) => void;
+  setShowFullWeek: (show: boolean) => void;
   setLaneMode: (mode: LaneMode) => void;
   setSidebarOpen: (open: boolean) => void;
   setPixelsPerMinute: (ppm: number) => void;
@@ -19,11 +21,13 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   activeView: 'executive',
   activeDay: 'friday',
+  showFullWeek: false,
   laneMode: 'department',
   sidebarOpen: false,
   pixelsPerMinute: 3,
   setActiveView: (view) => set({ activeView: view }),
-  setActiveDay: (day) => set({ activeDay: day }),
+  setActiveDay: (day) => set({ activeDay: day, showFullWeek: false }),
+  setShowFullWeek: (show) => set({ showFullWeek: show }),
   setLaneMode: (mode) => set({ laneMode: mode }),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   setPixelsPerMinute: (ppm) => set({ pixelsPerMinute: ppm }),
