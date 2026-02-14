@@ -122,13 +122,21 @@ function DayColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`bg-white flex flex-col transition-colors ${
-        isOver ? 'ring-2 ring-inset ring-indigo-400 bg-indigo-50/30' : ''
+      className={`flex flex-col transition-all duration-150 ${
+        isOver
+          ? 'bg-indigo-100 ring-4 ring-inset ring-indigo-500'
+          : 'bg-white'
       }`}
     >
       {/* Day header */}
-      <div className="sticky top-0 z-10 bg-slate-800 text-white px-3 py-2.5 text-center">
-        <div className="font-semibold font-heading text-sm">{day.label}</div>
+      <div
+        className={`sticky top-0 z-10 px-3 py-2.5 text-center text-white transition-colors duration-150 ${
+          isOver ? 'bg-indigo-600' : 'bg-slate-800'
+        }`}
+      >
+        <div className="font-semibold font-heading text-sm">
+          {isOver ? `↓ Drop on ${day.label}` : day.label}
+        </div>
       </div>
 
       <div className="flex-1 p-2 space-y-2">
