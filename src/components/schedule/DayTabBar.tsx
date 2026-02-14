@@ -33,7 +33,7 @@ export function DayTabBar() {
       {showFullWeekOption && (
         <button
           onClick={() => setShowFullWeek(true)}
-          className={`px-4 py-2.5 text-sm font-medium font-heading whitespace-nowrap transition-colors relative ml-auto ${
+          className={`px-4 py-2.5 text-sm font-bold font-heading whitespace-nowrap transition-colors relative ${
             showFullWeek
               ? 'text-indigo-600'
               : 'text-gray-500 hover:text-gray-700'
