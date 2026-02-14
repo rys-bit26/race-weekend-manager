@@ -20,6 +20,7 @@ import { ExportDialog } from './components/export/ExportDialog';
 import { FilterBar } from './components/filters/FilterBar';
 import { EventSelector } from './components/header/EventSelector';
 import { AddEventModal } from './components/header/AddEventModal';
+import { QuickSearch } from './components/header/QuickSearch';
 import { NotificationBell } from './components/notifications/NotificationBell';
 import { NotificationToast } from './components/notifications/NotificationToast';
 import { PersonSelector } from './components/notifications/PersonSelector';
@@ -188,6 +189,9 @@ function App() {
             </div>
 
             {/* Actions */}
+            <QuickSearch
+              matchCount={filters.searchQuery ? filteredActivities.length : undefined}
+            />
             <button
               onClick={() => setImportOpen(true)}
               className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
