@@ -1,6 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { AlertTriangle } from 'lucide-react';
 import { Modal } from '../common/Modal';
+import { db } from '../../db/database';
 import { DEPARTMENTS, DAYS, LOCATIONS } from '../../utils/constants';
+import { timeRangesOverlap, formatTimeRange } from '../../utils/time';
 import type { Activity, DepartmentId, ActivityStatus } from '../../types/activity';
 import type { Person } from '../../types/activity';
 import type { DayOfWeek } from '../../types/schedule';
@@ -13,6 +17,12 @@ interface ActivityModalProps {
   activity?: Activity | null;
   people: Person[];
   weekendId: string;
+}
+
+interface ConflictInfo {
+  activityName: string;
+  startTime: string;
+  endTime: string;
 }
 
 const emptyForm = {
@@ -55,6 +65,48 @@ export function ActivityModal({
       setForm(emptyForm);
     }
   }, [activity, open]);
+
+  // ── Conflict Detection ──
+
+  const sameDayActivities = useLiveQuery(
+    async () => {
+      if (!weekendId || !form.day) return [];
+      const all = await db.activities
+        .where('weekendId')
+        .equals(weekendId)
+        .toArray();
+      return all.filter((a) => a.day === form.day && a.id !== activity?.id);
+    },
+    [weekendId, form.day, activity?.id],
+    [] as Activity[]
+  );
+
+  const personConflicts = useMemo(() => {
+    const map = new Map<string, ConflictInfo[]>();
+    if (!form.startTime || !form.endTime || !sameDayActivities) return map;
+
+    for (const personId of form.personIds) {
+      const conflicts: ConflictInfo[] = [];
+      for (const other of sameDayActivities) {
+        if (
+          other.personIds.includes(personId) &&
+          timeRangesOverlap(form.startTime, form.endTime, other.startTime, other.endTime)
+        ) {
+          conflicts.push({
+            activityName: other.name,
+            startTime: other.startTime,
+            endTime: other.endTime,
+          });
+        }
+      }
+      if (conflicts.length > 0) {
+        map.set(personId, conflicts);
+      }
+    }
+    return map;
+  }, [form.personIds, form.startTime, form.endTime, sameDayActivities]);
+
+  // ── Form Handlers ──
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,23 +262,42 @@ export function ActivityModal({
                 Select a department first
               </p>
             ) : (
-              filteredPeople.map((person) => (
-                <label
-                  key={person.id}
-                  className="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-50 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={form.personIds.includes(person.id)}
-                    onChange={() => togglePerson(person.id)}
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className="text-sm text-gray-700">{person.name}</span>
-                  {person.role && (
-                    <span className="text-xs text-gray-400">({person.role})</span>
-                  )}
-                </label>
-              ))
+              filteredPeople.map((person) => {
+                const conflicts = personConflicts.get(person.id);
+                const isChecked = form.personIds.includes(person.id);
+                return (
+                  <div key={person.id}>
+                    <label className="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => togglePerson(person.id)}
+                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="text-sm text-gray-700">{person.name}</span>
+                      {person.role && (
+                        <span className="text-xs text-gray-400">({person.role})</span>
+                      )}
+                      {isChecked && conflicts && (
+                        <AlertTriangle size={14} className="text-amber-500 flex-shrink-0 ml-auto" />
+                      )}
+                    </label>
+                    {isChecked && conflicts && (
+                      <div className="ml-8 mb-1 space-y-0.5">
+                        {conflicts.map((c, i) => (
+                          <p key={i} className="text-xs text-amber-600 flex items-center gap-1">
+                            <span>Conflicts with</span>
+                            <span className="font-medium">{c.activityName}</span>
+                            <span className="text-amber-500">
+                              ({formatTimeRange(c.startTime, c.endTime)})
+                            </span>
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
