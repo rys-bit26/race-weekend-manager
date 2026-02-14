@@ -1,4 +1,3 @@
-import { CSS } from '@dnd-kit/utilities';
 import { useDraggable } from '@dnd-kit/core';
 import { DEPARTMENT_MAP } from '../../utils/constants';
 import { formatTimeRange } from '../../utils/time';
@@ -18,7 +17,7 @@ export function DraggableActivityCard({
   personMap,
   onEdit,
 }: DraggableActivityCardProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: activity.id,
     data: {
       day: activity.day as DayOfWeek,
@@ -34,18 +33,16 @@ export function DraggableActivityCard({
       {...listeners}
       {...attributes}
       onClick={() => {
-        // Don't open edit modal if we just finished a drag
         if (!isDragging) onEdit(activity);
       }}
-      className={`w-full text-left rounded-lg px-3 py-2.5 transition-shadow hover:shadow-md cursor-grab active:cursor-grabbing ${
+      className={`w-full text-left rounded-lg px-3 py-2.5 hover:shadow-md cursor-grab active:cursor-grabbing ${
         activity.status === 'pending'
           ? 'border-2 border-dashed'
           : 'border-2 border-solid'
-      } ${isDragging ? 'opacity-30 z-50' : ''}`}
+      } ${isDragging ? 'opacity-25' : ''}`}
       style={{
         borderColor: primaryDept?.color || '#6B7280',
         borderLeftWidth: '4px',
-        transform: CSS.Translate.toString(transform),
       }}
     >
       <ActivityCardContent
