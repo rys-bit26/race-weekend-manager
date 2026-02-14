@@ -3,7 +3,7 @@ import { useAppStore } from '../../store/appStore';
 import { DAYS, DEPARTMENT_MAP, SERIES_COLORS } from '../../utils/constants';
 import { getVisibleDaysForTablet } from '../../utils/responsiveDays';
 import { formatTimeRange } from '../../utils/time';
-import { DndScheduleWrapper } from './DndScheduleWrapper';
+import { DndScheduleWrapper, useDragActivity, DropInsertionLine } from './DndScheduleWrapper';
 import { DraggableActivityCard } from './DraggableActivityCard';
 import { Badge } from '../common/Badge';
 import { StatusIndicator } from '../common/StatusIndicator';
@@ -164,7 +164,23 @@ function DailyDayColumn({
   onEditActivity,
 }: DailyDayColumnProps) {
   const { isOver, setNodeRef } = useDroppable({ id: day.id });
+  const dragActivity = useDragActivity();
   const items = buildItems(activities, masterEvents);
+
+  // Compute chronological insertion index
+  let insertionIndex = -1;
+  if (isOver && dragActivity) {
+    const dragTime = dragActivity.startTime;
+    insertionIndex = items.length;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const itemTime = item.type === 'master' ? item.event.startTime : item.activity.startTime;
+      if (dragTime <= itemTime) {
+        insertionIndex = i;
+        break;
+      }
+    }
+  }
 
   return (
     <div
@@ -187,14 +203,13 @@ function DailyDayColumn({
       </div>
 
       <div className="flex-1 p-2 space-y-2">
-        {items.map((item) => {
-          if (item.type === 'master') {
+        {items.map((item, idx) => {
+          const itemEl = item.type === 'master' ? (() => {
             const event = item.event;
             const seriesColor =
               SERIES_COLORS[event.series] || SERIES_COLORS.GENERAL;
             return (
               <div
-                key={event.id}
                 className="rounded-lg px-3 py-2 border"
                 style={{
                   backgroundColor: `${seriesColor}15`,
@@ -209,20 +224,34 @@ function DailyDayColumn({
                 </div>
               </div>
             );
-          }
-
-          return (
+          })() : (
             <DraggableActivityCard
-              key={item.activity.id}
               activity={item.activity}
               personMap={personMap}
               onEdit={onEditActivity}
             />
           );
+
+          return (
+            <div key={item.type === 'master' ? item.event.id : item.activity.id}>
+              {insertionIndex === idx && dragActivity && (
+                <DropInsertionLine time={formatTimeRange(dragActivity.startTime, dragActivity.endTime)} />
+              )}
+              {itemEl}
+            </div>
+          );
         })}
 
-        {items.length === 0 && (
+        {insertionIndex === items.length && dragActivity && (
+          <DropInsertionLine time={formatTimeRange(dragActivity.startTime, dragActivity.endTime)} />
+        )}
+
+        {items.length === 0 && !isOver && (
           <div className="text-center text-sm text-gray-300 py-8">No activities</div>
+        )}
+
+        {items.length === 0 && isOver && dragActivity && (
+          <DropInsertionLine time={formatTimeRange(dragActivity.startTime, dragActivity.endTime)} />
         )}
       </div>
     </div>

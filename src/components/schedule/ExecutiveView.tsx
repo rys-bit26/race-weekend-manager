@@ -3,7 +3,7 @@ import { useAppStore } from '../../store/appStore';
 import { DAYS, DEPARTMENT_MAP, SERIES_COLORS } from '../../utils/constants';
 import { getVisibleDaysForTablet } from '../../utils/responsiveDays';
 import { formatTimeRange } from '../../utils/time';
-import { DndScheduleWrapper } from './DndScheduleWrapper';
+import { DndScheduleWrapper, useDragActivity, DropInsertionLine } from './DndScheduleWrapper';
 import { DraggableActivityCard } from './DraggableActivityCard';
 import type { Activity } from '../../types/activity';
 import type { MasterScheduleEvent, DayOfWeek } from '../../types/schedule';
@@ -108,6 +108,7 @@ function DayColumn({
   onEditActivity,
 }: DayColumnProps) {
   const { isOver, setNodeRef } = useDroppable({ id: day.id });
+  const dragActivity = useDragActivity();
 
   // Merge master events and team activities into a single chronological list
   const items: ScheduleItem[] = [
@@ -118,6 +119,21 @@ function DayColumn({
     const bTime = b.type === 'master' ? b.event.startTime : b.activity.startTime;
     return aTime.localeCompare(bTime);
   });
+
+  // Compute where the dragged activity would be inserted chronologically
+  let insertionIndex = -1;
+  if (isOver && dragActivity) {
+    const dragTime = dragActivity.startTime;
+    insertionIndex = items.length; // default: end
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const itemTime = item.type === 'master' ? item.event.startTime : item.activity.startTime;
+      if (dragTime <= itemTime) {
+        insertionIndex = i;
+        break;
+      }
+    }
+  }
 
   return (
     <div
@@ -140,29 +156,24 @@ function DayColumn({
       </div>
 
       <div className="flex-1 p-2 space-y-2">
-        {items.map((item) => {
-          if (item.type === 'master') {
-            const event = item.event;
-            return (
-              <div
-                key={event.id}
-                className="rounded-lg px-3 py-2 border"
-                style={{
-                  backgroundColor: `${SERIES_COLORS[event.series] || SERIES_COLORS.GENERAL}15`,
-                  borderColor: `${SERIES_COLORS[event.series] || SERIES_COLORS.GENERAL}40`,
-                }}
-              >
-                <div className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">
-                  {formatTimeRange(event.startTime, event.endTime)}
-                </div>
-                <div className="text-xs font-medium text-gray-700 mt-0.5 leading-tight">
-                  {event.title}
-                </div>
+        {items.map((item, idx) => {
+          const itemEl = item.type === 'master' ? (
+            <div
+              key={item.event.id}
+              className="rounded-lg px-3 py-2 border"
+              style={{
+                backgroundColor: `${SERIES_COLORS[item.event.series] || SERIES_COLORS.GENERAL}15`,
+                borderColor: `${SERIES_COLORS[item.event.series] || SERIES_COLORS.GENERAL}40`,
+              }}
+            >
+              <div className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">
+                {formatTimeRange(item.event.startTime, item.event.endTime)}
               </div>
-            );
-          }
-
-          return (
+              <div className="text-xs font-medium text-gray-700 mt-0.5 leading-tight">
+                {item.event.title}
+              </div>
+            </div>
+          ) : (
             <DraggableActivityCard
               key={item.activity.id}
               activity={item.activity}
@@ -170,10 +181,29 @@ function DayColumn({
               onEdit={onEditActivity}
             />
           );
+
+          return (
+            <div key={item.type === 'master' ? item.event.id : item.activity.id}>
+              {insertionIndex === idx && dragActivity && (
+                <DropInsertionLine time={formatTimeRange(dragActivity.startTime, dragActivity.endTime)} />
+              )}
+              {itemEl}
+            </div>
+          );
         })}
 
-        {items.length === 0 && (
+        {/* Insertion line at end of list */}
+        {insertionIndex === items.length && dragActivity && (
+          <DropInsertionLine time={formatTimeRange(dragActivity.startTime, dragActivity.endTime)} />
+        )}
+
+        {items.length === 0 && !isOver && (
           <div className="text-center text-sm text-gray-300 py-8">No activities</div>
+        )}
+
+        {/* Insertion line for empty column */}
+        {items.length === 0 && isOver && dragActivity && (
+          <DropInsertionLine time={formatTimeRange(dragActivity.startTime, dragActivity.endTime)} />
         )}
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -14,6 +14,31 @@ import { DEPARTMENT_MAP } from '../../utils/constants';
 import { ActivityCardContent } from './DraggableActivityCard';
 import type { Activity } from '../../types/activity';
 import type { DayOfWeek } from '../../types/schedule';
+
+/* ── Context to expose the dragged activity to child columns ── */
+
+const DragActivityContext = createContext<Activity | null>(null);
+
+export function useDragActivity() {
+  return useContext(DragActivityContext);
+}
+
+/* ── Insertion line component ── */
+
+export function DropInsertionLine({ time }: { time: string }) {
+  return (
+    <div className="flex items-center gap-1.5 -my-0.5 py-0.5">
+      <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0" />
+      <div className="flex-1 h-0.5 bg-indigo-500 rounded-full" />
+      <span className="text-[9px] font-bold text-indigo-600 whitespace-nowrap flex-shrink-0">
+        {time}
+      </span>
+      <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0" />
+    </div>
+  );
+}
+
+/* ── Wrapper ── */
 
 interface DndScheduleWrapperProps {
   children: ReactNode;
@@ -63,35 +88,36 @@ export function DndScheduleWrapper({
     : undefined;
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
-      {children}
+    <DragActivityContext.Provider value={activeActivity}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
+        {children}
 
-      {/* Portal the overlay to document.body so it's not clipped by overflow containers */}
-      {createPortal(
-        <DragOverlay dropAnimation={null}>
-          {activeActivity ? (
-            <div
-              className="rounded-lg px-3 py-2.5 bg-white shadow-2xl ring-2 ring-indigo-500 border-2 border-solid max-w-[220px] rotate-1"
-              style={{
-                borderColor: overlayDept?.color || '#6B7280',
-                borderLeftWidth: '4px',
-              }}
-            >
-              <ActivityCardContent
-                activity={activeActivity}
-                primaryDept={overlayDept}
-              />
-            </div>
-          ) : null}
-        </DragOverlay>,
-        document.body
-      )}
-    </DndContext>
+        {createPortal(
+          <DragOverlay dropAnimation={null}>
+            {activeActivity ? (
+              <div
+                className="rounded-lg px-3 py-2.5 bg-white shadow-2xl ring-2 ring-indigo-500 border-2 border-solid max-w-[220px] rotate-1"
+                style={{
+                  borderColor: overlayDept?.color || '#6B7280',
+                  borderLeftWidth: '4px',
+                }}
+              >
+                <ActivityCardContent
+                  activity={activeActivity}
+                  primaryDept={overlayDept}
+                />
+              </div>
+            ) : null}
+          </DragOverlay>,
+          document.body
+        )}
+      </DndContext>
+    </DragActivityContext.Provider>
   );
 }

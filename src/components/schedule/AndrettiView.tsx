@@ -3,7 +3,7 @@ import { useAppStore } from '../../store/appStore';
 import { DAYS, DEPARTMENT_MAP } from '../../utils/constants';
 import { getVisibleDaysForTablet } from '../../utils/responsiveDays';
 import { formatTimeRange } from '../../utils/time';
-import { DndScheduleWrapper } from './DndScheduleWrapper';
+import { DndScheduleWrapper, useDragActivity, DropInsertionLine } from './DndScheduleWrapper';
 import { DraggableActivityCard } from './DraggableActivityCard';
 import { Badge } from '../common/Badge';
 import { StatusIndicator } from '../common/StatusIndicator';
@@ -135,6 +135,20 @@ function AndrettiDayColumn({
   onEditActivity,
 }: AndrettiDayColumnProps) {
   const { isOver, setNodeRef } = useDroppable({ id: day.id });
+  const dragActivity = useDragActivity();
+
+  // Compute chronological insertion index
+  let insertionIndex = -1;
+  if (isOver && dragActivity) {
+    const dragTime = dragActivity.startTime;
+    insertionIndex = activities.length;
+    for (let i = 0; i < activities.length; i++) {
+      if (dragTime <= activities[i].startTime) {
+        insertionIndex = i;
+        break;
+      }
+    }
+  }
 
   return (
     <div
@@ -157,17 +171,29 @@ function AndrettiDayColumn({
       </div>
 
       <div className="flex-1 p-2 space-y-2">
-        {activities.map((activity) => (
-          <DraggableActivityCard
-            key={activity.id}
-            activity={activity}
-            personMap={personMap}
-            onEdit={onEditActivity}
-          />
+        {activities.map((activity, idx) => (
+          <div key={activity.id}>
+            {insertionIndex === idx && dragActivity && (
+              <DropInsertionLine time={formatTimeRange(dragActivity.startTime, dragActivity.endTime)} />
+            )}
+            <DraggableActivityCard
+              activity={activity}
+              personMap={personMap}
+              onEdit={onEditActivity}
+            />
+          </div>
         ))}
 
-        {activities.length === 0 && (
+        {insertionIndex === activities.length && dragActivity && (
+          <DropInsertionLine time={formatTimeRange(dragActivity.startTime, dragActivity.endTime)} />
+        )}
+
+        {activities.length === 0 && !isOver && (
           <div className="text-center text-sm text-gray-300 py-8">No activities</div>
+        )}
+
+        {activities.length === 0 && isOver && dragActivity && (
+          <DropInsertionLine time={formatTimeRange(dragActivity.startTime, dragActivity.endTime)} />
         )}
       </div>
     </div>
