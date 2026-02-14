@@ -1,5 +1,6 @@
 import { useAppStore } from '../../store/appStore';
 import { DAYS, DEPARTMENT_MAP, SERIES_COLORS } from '../../utils/constants';
+import { getVisibleDaysForTablet } from '../../utils/responsiveDays';
 import { formatTimeRange } from '../../utils/time';
 import { Badge } from '../common/Badge';
 import { StatusIndicator } from '../common/StatusIndicator';
@@ -57,12 +58,28 @@ export function DailyView({
       .filter((e) => e.day === day)
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
+  const tabletDays = getVisibleDaysForTablet(activeDay);
+
   if (fullWeek) {
     return (
       <div className="h-full overflow-auto">
-        {/* Desktop: all 5 days as columns */}
-        <div className="hidden md:grid md:grid-cols-5 gap-px bg-gray-200 min-h-full">
+        {/* Desktop (lg+): all 5 days as columns */}
+        <div className="hidden lg:grid lg:grid-cols-5 gap-px bg-gray-200 min-h-full">
           {DAYS.map((day) => (
+            <DailyDayColumn
+              key={day.id}
+              day={day}
+              activities={getActivitiesForDay(day.id)}
+              masterEvents={getMasterEventsForDay(day.id)}
+              personMap={personMap}
+              onEditActivity={onEditActivity}
+            />
+          ))}
+        </div>
+
+        {/* Tablet (md-lg): 3 days centered on active day */}
+        <div className="hidden md:grid lg:hidden md:grid-cols-3 gap-px bg-gray-200 min-h-full">
+          {tabletDays.map((day) => (
             <DailyDayColumn
               key={day.id}
               day={day}
