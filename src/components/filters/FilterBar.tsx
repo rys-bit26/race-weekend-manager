@@ -67,7 +67,7 @@ export function FilterBar({ people }: FilterBarProps) {
         <div className="bg-white border border-gray-200 rounded-lg p-3 space-y-3">
           {/* Departments */}
           <div>
-            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+            <label className="text-[10px] font-semibold font-heading text-gray-500 uppercase tracking-wider">
               Departments
             </label>
             <div className="flex flex-wrap gap-1.5 mt-1">
@@ -93,7 +93,7 @@ export function FilterBar({ people }: FilterBarProps) {
 
           {/* Status */}
           <div>
-            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+            <label className="text-[10px] font-semibold font-heading text-gray-500 uppercase tracking-wider">
               Status
             </label>
             <div className="flex gap-2 mt-1">
@@ -124,7 +124,7 @@ export function FilterBar({ people }: FilterBarProps) {
 
           {/* People (compact) */}
           <div>
-            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+            <label className="text-[10px] font-semibold font-heading text-gray-500 uppercase tracking-wider">
               People
             </label>
             <div className="mt-1 max-h-32 overflow-y-auto space-y-0.5">

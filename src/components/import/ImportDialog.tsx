@@ -231,7 +231,7 @@ export function ImportDialog({ open, onClose, weekendId }: ImportDialogProps) {
               <Calendar size={24} className="text-amber-600" />
             </div>
             <div>
-              <p className="font-semibold text-gray-800">INDYCAR Color Schedule</p>
+              <p className="font-semibold font-heading text-gray-800">INDYCAR Color Schedule</p>
               <p className="text-xs text-gray-500 mt-1">
                 Track schedule PDF from INDYCAR. Replaces the master schedule for this event.
               </p>
@@ -249,7 +249,7 @@ export function ImportDialog({ open, onClose, weekendId }: ImportDialogProps) {
               <Users size={24} className="text-blue-600" />
             </div>
             <div>
-              <p className="font-semibold text-gray-800">Department Schedule</p>
+              <p className="font-semibold font-heading text-gray-800">Department Schedule</p>
               <p className="text-xs text-gray-500 mt-1">
                 Department-specific PDF or Excel. Creates team activity records.
               </p>
@@ -570,7 +570,7 @@ export function ImportDialog({ open, onClose, weekendId }: ImportDialogProps) {
           <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check size={24} className="text-green-600" />
           </div>
-          <p className="text-gray-800 font-medium mb-1">Import Complete!</p>
+          <p className="text-gray-800 font-medium font-heading mb-1">Import Complete!</p>
           <p className="text-sm text-gray-500 mb-6">
             {importedCount}{' '}
             {importType === 'indycar-schedule' ? 'events have been added to the master schedule.' : 'activities have been added to the team schedule.'}

@@ -16,7 +16,7 @@ export function DayTabBar() {
             setActiveDay(day.id);
             // setActiveDay already sets showFullWeek to false
           }}
-          className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors relative ${
+          className={`px-4 py-2.5 text-sm font-medium font-heading whitespace-nowrap transition-colors relative ${
             !showFullWeek && activeDay === day.id
               ? 'text-indigo-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -33,7 +33,7 @@ export function DayTabBar() {
       {showFullWeekOption && (
         <button
           onClick={() => setShowFullWeek(true)}
-          className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors relative ml-auto ${
+          className={`px-4 py-2.5 text-sm font-medium font-heading whitespace-nowrap transition-colors relative ml-auto ${
             showFullWeek
               ? 'text-indigo-600'
               : 'text-gray-500 hover:text-gray-700'

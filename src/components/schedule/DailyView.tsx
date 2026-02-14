@@ -97,7 +97,7 @@ export function DailyView({
     <div className="h-full overflow-auto">
       <div className="max-w-3xl mx-auto px-4 py-4">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold font-heading text-gray-900">
             {dayLabel} &mdash; Daily Schedule
           </h2>
           <p className="text-sm text-gray-500">
@@ -145,7 +145,7 @@ function DailyDayColumn({
     <div className="bg-white flex flex-col">
       {/* Day header */}
       <div className="sticky top-0 z-10 bg-slate-800 text-white px-3 py-2.5 text-center">
-        <div className="font-semibold text-sm">{day.label}</div>
+        <div className="font-semibold font-heading text-sm">{day.label}</div>
       </div>
 
       <div className="flex-1 p-2 space-y-2">
@@ -166,7 +166,7 @@ function DailyDayColumn({
                 <div className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">
                   {formatTimeRange(event.startTime, event.endTime)}
                 </div>
-                <div className="text-xs font-medium text-gray-700 mt-0.5 leading-tight">
+                <div className="text-xs font-medium font-heading text-gray-700 mt-0.5 leading-tight">
                   {event.title}
                 </div>
               </div>
@@ -195,7 +195,7 @@ function DailyDayColumn({
                 </span>
                 <StatusIndicator status={activity.status} />
               </div>
-              <div className="text-sm font-medium text-gray-900 leading-tight mb-1.5">
+              <div className="text-sm font-medium font-heading text-gray-900 leading-tight mb-1.5">
                 {activity.name}
               </div>
               <div className="flex flex-wrap gap-1 mb-1">
@@ -241,7 +241,7 @@ function DailyDayColumn({
 function EmptyState({ message }: { message: string }) {
   return (
     <div className="text-center py-16 text-gray-400">
-      <p className="text-lg font-medium">No events scheduled</p>
+      <p className="text-lg font-medium font-heading">No events scheduled</p>
       <p className="text-sm mt-1">{message}</p>
     </div>
   );
@@ -288,7 +288,7 @@ function ItemList({
                   {event.series.replace(/_/g, ' ')}
                 </span>
               </div>
-              <div className="text-sm font-medium text-gray-700 leading-tight">
+              <div className="text-sm font-medium font-heading text-gray-700 leading-tight">
                 {event.title}
               </div>
             </div>
@@ -317,7 +317,7 @@ function ItemList({
               </span>
               <StatusIndicator status={activity.status} />
             </div>
-            <div className="text-sm font-semibold text-gray-900 leading-tight mb-1.5">
+            <div className="text-sm font-semibold font-heading text-gray-900 leading-tight mb-1.5">
               {activity.name}
             </div>
             <div className="flex flex-wrap gap-1 mb-1">

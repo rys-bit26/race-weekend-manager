@@ -99,7 +99,7 @@ function DayColumn({
     <div className="bg-white flex flex-col">
       {/* Day header */}
       <div className="sticky top-0 z-10 bg-slate-800 text-white px-3 py-2.5 text-center">
-        <div className="font-semibold text-sm">{day.label}</div>
+        <div className="font-semibold font-heading text-sm">{day.label}</div>
       </div>
 
       <div className="flex-1 p-2 space-y-2">
@@ -147,7 +147,7 @@ function DayColumn({
                 </span>
                 <StatusIndicator status={activity.status} />
               </div>
-              <div className="text-sm font-medium text-gray-900 leading-tight mb-1.5">
+              <div className="text-sm font-medium font-heading text-gray-900 leading-tight mb-1.5">
                 {activity.name}
               </div>
               <div className="flex flex-wrap gap-1 mb-1">

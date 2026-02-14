@@ -47,7 +47,7 @@ export function EventSelector({ weekends, activeWeekend, onSelect, onAddNew }: E
         className="flex items-center gap-2 hover:bg-slate-800 rounded-lg px-2 py-1.5 transition-colors text-left"
       >
         <div className="min-w-0">
-          <h1 className="text-sm font-bold tracking-tight truncate">
+          <h1 className="text-sm font-bold font-heading tracking-tight truncate">
             {activeWeekend?.name ?? 'Select Event'}
           </h1>
           {activeWeekend && (

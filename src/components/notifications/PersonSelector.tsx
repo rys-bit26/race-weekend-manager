@@ -41,7 +41,7 @@ export function PersonSelector({ open, people, onClose }: PersonSelectorProps) {
               <User size={20} className="text-indigo-600" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold font-heading text-gray-900">
                 Who are you?
               </h2>
               <p className="text-sm text-gray-500">

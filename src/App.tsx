@@ -154,7 +154,7 @@ function App() {
             <div className="hidden sm:flex items-center bg-slate-800 rounded-lg p-0.5">
               <button
                 onClick={() => setActiveView('executive')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium font-heading transition-colors ${
                   activeView === 'executive'
                     ? 'bg-indigo-600 text-white'
                     : 'text-slate-400 hover:text-white'
@@ -165,7 +165,7 @@ function App() {
               </button>
               <button
                 onClick={() => setActiveView('andretti')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium font-heading transition-colors ${
                   activeView === 'andretti'
                     ? 'bg-indigo-600 text-white'
                     : 'text-slate-400 hover:text-white'
@@ -176,7 +176,7 @@ function App() {
               </button>
               <button
                 onClick={() => setActiveView('daily')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium font-heading transition-colors ${
                   activeView === 'daily'
                     ? 'bg-indigo-600 text-white'
                     : 'text-slate-400 hover:text-white'
@@ -208,7 +208,7 @@ function App() {
             />
             <button
               onClick={handleNewActivity}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium font-heading rounded-lg transition-colors"
             >
               <Plus size={16} />
               <span className="hidden sm:inline">Activity</span>
@@ -220,7 +220,7 @@ function App() {
         <div className="sm:hidden flex items-center bg-slate-800 mx-4 mb-2 rounded-lg p-0.5">
           <button
             onClick={() => setActiveView('executive')}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium font-heading transition-colors ${
               activeView === 'executive'
                 ? 'bg-indigo-600 text-white'
                 : 'text-slate-400'
@@ -231,7 +231,7 @@ function App() {
           </button>
           <button
             onClick={() => setActiveView('andretti')}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium font-heading transition-colors ${
               activeView === 'andretti'
                 ? 'bg-indigo-600 text-white'
                 : 'text-slate-400'
@@ -242,7 +242,7 @@ function App() {
           </button>
           <button
             onClick={() => setActiveView('daily')}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium font-heading transition-colors ${
               activeView === 'daily'
                 ? 'bg-indigo-600 text-white'
                 : 'text-slate-400'
