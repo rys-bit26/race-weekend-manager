@@ -47,7 +47,7 @@ function App() {
   const filters = useFilterStore();
   const activePersonId = useNotificationStore((s) => s.activePersonId);
 
-  const { activeWeekend, activeWeekendId, weekends, setActiveWeekendId } = useActiveWeekend();
+  const { activeWeekend, activeWeekendId, weekends, setActiveWeekendId, refresh: refreshWeekends } = useActiveWeekend();
   const { activities, addActivity, updateActivity, deleteActivity } = useActivities(activeWeekendId);
   const { events: masterEvents } = useMasterSchedule(activeWeekendId);
   const { people, addPerson, updatePerson, deletePerson } = usePeople();
@@ -337,7 +337,7 @@ function App() {
       <AddEventModal
         open={addEventOpen}
         onClose={() => setAddEventOpen(false)}
-        onCreated={(id) => setActiveWeekendId(id)}
+        onCreated={(id) => { refreshWeekends(); setActiveWeekendId(id); }}
       />
 
       <PersonSelector

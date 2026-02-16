@@ -19,12 +19,12 @@ export function useRaceWeekends() {
     refresh();
   }, [refresh]);
 
-  return weekends;
+  return { weekends, refresh };
 }
 
 export function useActiveWeekend() {
   const { activeWeekendId, setActiveWeekendId } = useWeekendStore();
-  const weekends = useRaceWeekends();
+  const { weekends, refresh } = useRaceWeekends();
   const [activeWeekend, setActiveWeekend] = useState<RaceWeekend | undefined>();
 
   // Auto-select the first weekend if none is active
@@ -44,5 +44,5 @@ export function useActiveWeekend() {
     }
   }, [activeWeekendId, weekends]);
 
-  return { activeWeekend, weekends, activeWeekendId, setActiveWeekendId };
+  return { activeWeekend, weekends, activeWeekendId, setActiveWeekendId, refresh };
 }
