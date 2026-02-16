@@ -13,10 +13,13 @@ let initPromise: Promise<boolean> | null = null;
 async function checkServer(): Promise<boolean> {
   try {
     const res = await fetch(`${API_BASE}/weekends`, {
-      method: 'HEAD',
       signal: AbortSignal.timeout(2000), // 2 second timeout
     });
-    return res.ok;
+    if (!res.ok) return false;
+    // Verify the response is actually JSON from our API,
+    // not an HTML fallback page from a static server (e.g. Railway)
+    const contentType = res.headers.get('content-type') || '';
+    return contentType.includes('application/json');
   } catch {
     return false;
   }
