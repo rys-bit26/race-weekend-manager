@@ -8,7 +8,7 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api';
 // ── Server availability detection ──
 
 let serverAvailable: boolean | null = null; // null = not checked yet
-let checkPromise: Promise<boolean> | null = null;
+let initPromise: Promise<boolean> | null = null;
 
 async function checkServer(): Promise<boolean> {
   try {
@@ -22,28 +22,35 @@ async function checkServer(): Promise<boolean> {
   }
 }
 
+/**
+ * Check server availability and ensure Dexie is seeded if offline.
+ * Returns true if server is available, false if using local Dexie.
+ * All API calls await this before proceeding, ensuring seed data
+ * is ready before the first Dexie query.
+ */
 async function isServerAvailable(): Promise<boolean> {
   if (serverAvailable !== null) return serverAvailable;
-  if (!checkPromise) {
-    checkPromise = checkServer().then((available) => {
+  if (!initPromise) {
+    initPromise = (async () => {
+      const available = await checkServer();
       serverAvailable = available;
       if (!available) {
         console.log('[api] Server unreachable — using local IndexedDB');
-        // Seed Dexie if empty
-        seedDatabase().catch(console.error);
+        // Await seed so Dexie has data before any queries run
+        await seedDatabase();
       } else {
         console.log('[api] Server connected — using API');
       }
       return available;
-    });
+    })();
   }
-  return checkPromise;
+  return initPromise;
 }
 
 // Allow re-checking (e.g. when server starts up later)
 export function resetServerCheck(): void {
   serverAvailable = null;
-  checkPromise = null;
+  initPromise = null;
 }
 
 // ── Remote (fetch) helpers ──
