@@ -45,6 +45,14 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
+  },
   optimizeDeps: {
     include: ['pdfmake/build/pdfmake', 'pdfmake/build/vfs_fonts'],
   },

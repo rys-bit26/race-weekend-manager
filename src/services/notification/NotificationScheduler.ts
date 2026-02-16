@@ -1,8 +1,16 @@
-import { db } from '../../db/database';
+import { api } from '../../lib/api';
 import { generateId } from '../../utils/id';
 import { resolveActivityDate } from '../../utils/dateResolve';
 import { useNotificationStore } from '../../store/notificationStore';
 import type { FiredNotification } from '../../types/notification';
+
+// In-memory stores that mirror the useNotifications.ts pattern
+// These are module-level so the scheduler can read/write without hooks
+import {
+  getSubscriptionsForScheduler,
+  getFiredNotificationsForScheduler,
+  addFiredNotification,
+} from './notificationStoreHelpers';
 
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
@@ -14,23 +22,25 @@ let intervalId: ReturnType<typeof setInterval> | null = null;
 export async function checkAndFire(weekendId: string, personId: string) {
   try {
     // Get the weekend to resolve dates
-    const weekend = await db.raceWeekends.get(weekendId);
+    const weekend = await api.weekends.get(weekendId);
     if (!weekend) return;
 
     // Get all enabled subscriptions for this person+weekend
-    const subs = await db.notificationSubscriptions
-      .where('personId')
-      .equals(personId)
-      .filter((s) => s.weekendId === weekendId && s.enabled && s.channels.includes('in-app'))
-      .toArray();
+    const subs = getSubscriptionsForScheduler(personId, weekendId)
+      .filter((s) => s.enabled && s.channels.includes('in-app'));
 
     if (subs.length === 0) return;
 
+    // Fetch all activities for this weekend
+    const allActivities = await api.activities.list(weekendId);
+    const activityMap = new Map(allActivities.map((a) => [a.id, a]));
+
     const now = new Date();
+    const firedNotifications = getFiredNotificationsForScheduler();
 
     for (const sub of subs) {
       // Get the activity
-      const activity = await db.activities.get(sub.activityId);
+      const activity = activityMap.get(sub.activityId);
       if (!activity) continue;
 
       // Resolve the absolute date/time of the activity
@@ -52,10 +62,9 @@ export async function checkAndFire(weekendId: string, personId: string) {
       if (now > activityDate) continue;
 
       // Check if we already fired this notification
-      const existing = await db.firedNotifications
-        .where('subscriptionId')
-        .equals(sub.id)
-        .first();
+      const existing = firedNotifications.find(
+        (n) => n.subscriptionId === sub.id
+      );
 
       if (existing) continue;
 
@@ -82,7 +91,7 @@ export async function checkAndFire(weekendId: string, personId: string) {
         startTime: activity.startTime,
       };
 
-      await db.firedNotifications.add(fired);
+      addFiredNotification(fired);
 
       // Show toast
       useNotificationStore.getState().addToast(fired);

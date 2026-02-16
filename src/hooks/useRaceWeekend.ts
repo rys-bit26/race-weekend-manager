@@ -1,16 +1,31 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/database';
+import { useState, useEffect, useCallback } from 'react';
 import { useWeekendStore } from '../store/weekendStore';
-import { useEffect } from 'react';
+import { api } from '../lib/api';
+import type { RaceWeekend } from '../types/schedule';
 
 export function useRaceWeekends() {
-  return useLiveQuery(() => db.raceWeekends.toArray(), [], []);
+  const [weekends, setWeekends] = useState<RaceWeekend[]>([]);
+
+  const refresh = useCallback(async () => {
+    try {
+      const data = await api.weekends.list();
+      setWeekends(data);
+    } catch (err) {
+      console.error('Failed to fetch weekends:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  return weekends;
 }
 
 export function useActiveWeekend() {
   const { activeWeekendId, setActiveWeekendId } = useWeekendStore();
-
   const weekends = useRaceWeekends();
+  const [activeWeekend, setActiveWeekend] = useState<RaceWeekend | undefined>();
 
   // Auto-select the first weekend if none is active
   useEffect(() => {
@@ -19,10 +34,15 @@ export function useActiveWeekend() {
     }
   }, [activeWeekendId, weekends, setActiveWeekendId]);
 
-  const activeWeekend = useLiveQuery(
-    () => (activeWeekendId ? db.raceWeekends.get(activeWeekendId) : undefined),
-    [activeWeekendId]
-  );
+  // Find active weekend from the fetched list
+  useEffect(() => {
+    if (activeWeekendId) {
+      const found = weekends.find((w) => w.id === activeWeekendId);
+      setActiveWeekend(found);
+    } else {
+      setActiveWeekend(undefined);
+    }
+  }, [activeWeekendId, weekends]);
 
   return { activeWeekend, weekends, activeWeekendId, setActiveWeekendId };
 }

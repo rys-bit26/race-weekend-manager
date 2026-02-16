@@ -1,7 +1,8 @@
 import { format } from 'date-fns';
-import { db } from '../../db/database';
+import { api } from '../../lib/api';
 import { resolveActivityDate } from '../../utils/dateResolve';
 import { generateId } from '../../utils/id';
+import { getSubscriptionsForScheduler } from './notificationStoreHelpers';
 
 /**
  * Get the IANA timezone string for the user's browser (e.g. "America/New_York").
@@ -50,24 +51,25 @@ export async function generateIcsForPerson(
   personId: string,
   weekendId: string
 ): Promise<string> {
-  const weekend = await db.raceWeekends.get(weekendId);
+  const weekend = await api.weekends.get(weekendId);
   if (!weekend) throw new Error('Weekend not found');
 
-  const subs = await db.notificationSubscriptions
-    .where('personId')
-    .equals(personId)
-    .filter((s) => s.weekendId === weekendId && s.enabled)
-    .toArray();
+  const subs = getSubscriptionsForScheduler(personId, weekendId)
+    .filter((s) => s.enabled);
 
   if (subs.length === 0) {
     throw new Error('No subscribed activities to export');
   }
 
+  // Fetch all activities for this weekend and build a lookup map
+  const allActivities = await api.activities.list(weekendId);
+  const activityMap = new Map(allActivities.map((a) => [a.id, a]));
+
   const tz = getLocalTimezone();
   const events: string[] = [];
 
   for (const sub of subs) {
-    const activity = await db.activities.get(sub.activityId);
+    const activity = activityMap.get(sub.activityId);
     if (!activity) continue;
 
     const startDate = resolveActivityDate(

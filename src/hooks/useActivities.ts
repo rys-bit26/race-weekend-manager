@@ -1,60 +1,72 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/database';
-import { generateId } from '../utils/id';
+import { useState, useEffect, useCallback } from 'react';
+import { api } from '../lib/api';
 import type { Activity, DepartmentId, ActivityStatus } from '../types/activity';
 import type { DayOfWeek } from '../types/schedule';
 
 export function useActivities(weekendId: string | null, day?: DayOfWeek) {
-  const activities = useLiveQuery(
-    () => {
-      if (!weekendId) return [];
-      let query = db.activities.where('weekendId').equals(weekendId);
-      return query.toArray().then((items) =>
-        day ? items.filter((a) => a.day === day) : items
-      );
+  const [activities, setActivities] = useState<Activity[]>([]);
+
+  const refresh = useCallback(async () => {
+    if (!weekendId) {
+      setActivities([]);
+      return;
+    }
+    try {
+      let data = await api.activities.list(weekendId);
+      if (day) {
+        data = data.filter((a) => a.day === day);
+      }
+      setActivities(data);
+    } catch (err) {
+      console.error('Failed to fetch activities:', err);
+    }
+  }, [weekendId, day]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const addActivity = useCallback(
+    async (data: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>) => {
+      if (!weekendId) return;
+      const { weekendId: _wid, ...rest } = data as Activity;
+      const activity = await api.activities.create(weekendId, rest);
+      await refresh();
+      return activity;
     },
-    [weekendId, day],
-    []
+    [weekendId, refresh]
   );
 
-  const addActivity = async (
-    data: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>
-  ) => {
-    const now = new Date().toISOString();
-    const activity: Activity = {
-      ...data,
-      id: generateId(),
-      createdAt: now,
-      updatedAt: now,
-    };
-    await db.activities.add(activity);
-    return activity;
-  };
+  const updateActivity = useCallback(
+    async (id: string, changes: Partial<Activity>) => {
+      await api.activities.update(id, changes);
+      await refresh();
+    },
+    [refresh]
+  );
 
-  const updateActivity = async (id: string, changes: Partial<Activity>) => {
-    await db.activities.update(id, {
-      ...changes,
-      updatedAt: new Date().toISOString(),
-    });
-  };
+  const deleteActivity = useCallback(
+    async (id: string) => {
+      await api.activities.delete(id);
+      await refresh();
+    },
+    [refresh]
+  );
 
-  const deleteActivity = async (id: string) => {
-    await db.activities.delete(id);
-  };
+  const toggleStatus = useCallback(
+    async (id: string) => {
+      const activity = activities.find((a) => a.id === id);
+      if (activity) {
+        const newStatus: ActivityStatus =
+          activity.status === 'pending' ? 'confirmed' : 'pending';
+        await api.activities.update(id, { status: newStatus });
+        await refresh();
+      }
+    },
+    [activities, refresh]
+  );
 
-  const toggleStatus = async (id: string) => {
-    const activity = await db.activities.get(id);
-    if (activity) {
-      const newStatus: ActivityStatus =
-        activity.status === 'pending' ? 'confirmed' : 'pending';
-      await db.activities.update(id, {
-        status: newStatus,
-        updatedAt: new Date().toISOString(),
-      });
-    }
-  };
-
-  return { activities, addActivity, updateActivity, deleteActivity, toggleStatus };
+  return { activities, addActivity, updateActivity, deleteActivity, toggleStatus, refresh };
 }
 
 export function filterActivities(

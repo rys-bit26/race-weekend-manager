@@ -1,21 +1,30 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/database';
-import type { DayOfWeek } from '../types/schedule';
+import { useState, useEffect, useCallback } from 'react';
+import { api } from '../lib/api';
+import type { MasterScheduleEvent, DayOfWeek } from '../types/schedule';
 
 export function useMasterSchedule(weekendId: string | null, day?: DayOfWeek) {
-  const events = useLiveQuery(
-    () => {
-      if (!weekendId) return [];
-      return db.masterEvents
-        .where('weekendId')
-        .equals(weekendId)
-        .toArray()
-        .then((items) => (day ? items.filter((e) => e.day === day) : items))
-        .then((items) => items.sort((a, b) => a.startTime.localeCompare(b.startTime)));
-    },
-    [weekendId, day],
-    []
-  );
+  const [events, setEvents] = useState<MasterScheduleEvent[]>([]);
 
-  return { events };
+  const refresh = useCallback(async () => {
+    if (!weekendId) {
+      setEvents([]);
+      return;
+    }
+    try {
+      let data = await api.masterEvents.list(weekendId);
+      if (day) {
+        data = data.filter((e) => e.day === day);
+      }
+      data.sort((a, b) => a.startTime.localeCompare(b.startTime));
+      setEvents(data);
+    } catch (err) {
+      console.error('Failed to fetch master events:', err);
+    }
+  }, [weekendId, day]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  return { events, refresh };
 }

@@ -14,8 +14,8 @@ import {
   generateIcsForPerson,
   downloadIcsFile,
 } from '../../services/notification/IcsExportService';
+import { api } from '../../lib/api';
 import { DEPARTMENTS, DEPARTMENT_MAP, REMINDER_TIMINGS, NOTIFICATION_CHANNELS } from '../../utils/constants';
-import { db } from '../../db/database';
 import type { Activity, Person } from '../../types/activity';
 import type { NotificationChannel, ReminderTiming } from '../../types/notification';
 
@@ -47,12 +47,12 @@ export function NotificationPreferencesModal({
   // Load person's phone data when person changes
   useEffect(() => {
     if (!activePersonId) return;
-    db.people.get(activePersonId).then((person) => {
+    api.people.get(activePersonId).then((person) => {
       if (person) {
         setPhoneNumber(person.phoneNumber ?? '');
         setSmsOptIn(person.smsOptIn ?? false);
       }
-    });
+    }).catch(() => {});
   }, [activePersonId]);
 
   // Map of activityId → subscription
@@ -111,7 +111,7 @@ export function NotificationPreferencesModal({
 
   const handleSavePhone = async () => {
     if (!activePersonId) return;
-    await db.people.update(activePersonId, { phoneNumber, smsOptIn });
+    await api.people.update(activePersonId, { phoneNumber, smsOptIn });
   };
 
   const handleExportIcs = async () => {
@@ -119,7 +119,7 @@ export function NotificationPreferencesModal({
     setIcsExporting(true);
     try {
       const content = await generateIcsForPerson(activePersonId, weekendId);
-      const weekend = await db.raceWeekends.get(weekendId);
+      const weekend = await api.weekends.get(weekendId);
       const filename = `${(weekend?.name ?? 'schedule').replace(/\s+/g, '-').toLowerCase()}-schedule.ics`;
       downloadIcsFile(content, filename);
     } catch (err) {

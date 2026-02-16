@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Race Weekend Manager</string>
+    <string name="title_activity_main">Race Weekend Manager</string>
+    <string name="package_name">com.andretti.raceweekend</string>
+    <string name="custom_url_scheme">com.andretti.raceweekend</string>
+</resources>

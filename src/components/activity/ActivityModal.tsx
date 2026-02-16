@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { AlertTriangle } from 'lucide-react';
 import { Modal } from '../common/Modal';
-import { db } from '../../db/database';
+import { api } from '../../lib/api';
 import { DEPARTMENTS, DAYS, LOCATIONS } from '../../utils/constants';
 import { timeRangesOverlap, formatTimeRange } from '../../utils/time';
 import type { Activity, DepartmentId, ActivityStatus } from '../../types/activity';
@@ -68,18 +67,17 @@ export function ActivityModal({
 
   // ── Conflict Detection ──
 
-  const sameDayActivities = useLiveQuery(
-    async () => {
-      if (!weekendId || !form.day) return [];
-      const all = await db.activities
-        .where('weekendId')
-        .equals(weekendId)
-        .toArray();
-      return all.filter((a) => a.day === form.day && a.id !== activity?.id);
-    },
-    [weekendId, form.day, activity?.id],
-    [] as Activity[]
-  );
+  const [sameDayActivities, setSameDayActivities] = useState<Activity[]>([]);
+
+  useEffect(() => {
+    if (!weekendId || !form.day) {
+      setSameDayActivities([]);
+      return;
+    }
+    api.activities.list(weekendId).then((all) => {
+      setSameDayActivities(all.filter((a) => a.day === form.day && a.id !== activity?.id));
+    }).catch(() => setSameDayActivities([]));
+  }, [weekendId, form.day, activity?.id]);
 
   const personConflicts = useMemo(() => {
     const map = new Map<string, ConflictInfo[]>();

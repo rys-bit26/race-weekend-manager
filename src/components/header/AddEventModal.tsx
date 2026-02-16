@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Modal } from '../common/Modal';
-import { db } from '../../db/database';
-import { generateId } from '../../utils/id';
-import type { RaceWeekend } from '../../types/schedule';
+import { api } from '../../lib/api';
 
 interface AddEventModalProps {
   open: boolean;
@@ -24,18 +22,13 @@ export function AddEventModal({ open, onClose, onCreated }: AddEventModalProps) 
     if (!canSave) return;
     setSaving(true);
     try {
-      const now = new Date().toISOString();
-      const weekend: RaceWeekend = {
-        id: generateId(),
+      const weekend = await api.weekends.create({
         name: name.trim(),
         trackName: trackName.trim() || name.trim(),
         location: location.trim(),
         startDate,
         endDate,
-        createdAt: now,
-        updatedAt: now,
-      };
-      await db.raceWeekends.add(weekend);
+      });
       onCreated(weekend.id);
       reset();
       onClose();

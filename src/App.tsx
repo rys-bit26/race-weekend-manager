@@ -8,7 +8,6 @@ import { useMasterSchedule } from './hooks/useMasterSchedule';
 import { usePeople } from './hooks/usePeople';
 import { useNotificationScheduler } from './hooks/useNotificationScheduler';
 import { searchActivities } from './services/search/SearchService';
-import { seedDatabase } from './db/seed';
 import { DAYS } from './utils/constants';
 import { DayTabBar } from './components/schedule/DayTabBar';
 import { ExecutiveView } from './components/schedule/ExecutiveView';
@@ -25,10 +24,14 @@ import { NotificationBell } from './components/notifications/NotificationBell';
 import { NotificationToast } from './components/notifications/NotificationToast';
 import { PersonSelector } from './components/notifications/PersonSelector';
 import { NotificationPreferencesModal } from './components/notifications/NotificationPreferencesModal';
+import { PeopleManager } from './components/people/PeopleManager';
+import { CalendarSubscriptions } from './components/settings/CalendarSubscriptions';
 import type { Activity } from './types/activity';
 import {
   LayoutGrid,
   Users,
+  UsersRound,
+  CalendarDays,
   List,
   Plus,
   FileUp,
@@ -47,7 +50,7 @@ function App() {
   const { activeWeekend, activeWeekendId, weekends, setActiveWeekendId } = useActiveWeekend();
   const { activities, addActivity, updateActivity, deleteActivity } = useActivities(activeWeekendId);
   const { events: masterEvents } = useMasterSchedule(activeWeekendId);
-  const { people } = usePeople();
+  const { people, addPerson, updatePerson, deletePerson } = usePeople();
 
   // Start notification scheduler
   useNotificationScheduler(activeWeekendId);
@@ -59,11 +62,8 @@ function App() {
   const [addEventOpen, setAddEventOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
   const [personSelectorOpen, setPersonSelectorOpen] = useState(false);
-
-  // Seed database on first load
-  useEffect(() => {
-    seedDatabase();
-  }, []);
+  const [peopleManagerOpen, setPeopleManagerOpen] = useState(false);
+  const [calendarFeedsOpen, setCalendarFeedsOpen] = useState(false);
 
   // Show person selector on first visit if no person selected
   useEffect(() => {
@@ -193,6 +193,13 @@ function App() {
               matchCount={filters.searchQuery ? filteredActivities.length : undefined}
             />
             <button
+              onClick={() => setPeopleManagerOpen(true)}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+              title="Team Directory"
+            >
+              <UsersRound size={18} />
+            </button>
+            <button
               onClick={() => setImportOpen(true)}
               className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
               title="Import Schedule"
@@ -205,6 +212,13 @@ function App() {
               title="Export PDF"
             >
               <Download size={18} />
+            </button>
+            <button
+              onClick={() => setCalendarFeedsOpen(true)}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+              title="Calendar Feeds"
+            >
+              <CalendarDays size={18} />
             </button>
             <NotificationBell
               weekendId={activeWeekendId}
@@ -338,6 +352,20 @@ function App() {
         weekendId={activeWeekendId}
         activities={activities}
         people={people}
+      />
+
+      <PeopleManager
+        open={peopleManagerOpen}
+        onClose={() => setPeopleManagerOpen(false)}
+        people={people}
+        onAddPerson={addPerson}
+        onUpdatePerson={updatePerson}
+        onDeletePerson={deletePerson}
+      />
+
+      <CalendarSubscriptions
+        open={calendarFeedsOpen}
+        onClose={() => setCalendarFeedsOpen(false)}
       />
 
       {activeWeekendId && (

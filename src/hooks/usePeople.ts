@@ -1,33 +1,50 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/database';
-import { generateId } from '../utils/id';
+import { useState, useEffect, useCallback } from 'react';
+import { api } from '../lib/api';
 import type { Person, DepartmentId } from '../types/activity';
 
 export function usePeople(departmentId?: DepartmentId) {
-  const people = useLiveQuery(
-    () => {
+  const [people, setPeople] = useState<Person[]>([]);
+
+  const refresh = useCallback(async () => {
+    try {
+      let data = await api.people.list();
       if (departmentId) {
-        return db.people.where('departmentId').equals(departmentId).toArray();
+        data = data.filter((p) => p.departmentId === departmentId);
       }
-      return db.people.toArray();
+      setPeople(data);
+    } catch (err) {
+      console.error('Failed to fetch people:', err);
+    }
+  }, [departmentId]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const addPerson = useCallback(
+    async (data: Omit<Person, 'id'>) => {
+      const person = await api.people.create(data);
+      await refresh();
+      return person;
     },
-    [departmentId],
-    []
+    [refresh]
   );
 
-  const addPerson = async (data: Omit<Person, 'id'>) => {
-    const person: Person = { ...data, id: generateId() };
-    await db.people.add(person);
-    return person;
-  };
+  const updatePerson = useCallback(
+    async (id: string, changes: Partial<Person>) => {
+      await api.people.update(id, changes);
+      await refresh();
+    },
+    [refresh]
+  );
 
-  const updatePerson = async (id: string, changes: Partial<Person>) => {
-    await db.people.update(id, changes);
-  };
+  const deletePerson = useCallback(
+    async (id: string) => {
+      await api.people.delete(id);
+      await refresh();
+    },
+    [refresh]
+  );
 
-  const deletePerson = async (id: string) => {
-    await db.people.delete(id);
-  };
-
-  return { people, addPerson, updatePerson, deletePerson };
+  return { people, addPerson, updatePerson, deletePerson, refresh };
 }

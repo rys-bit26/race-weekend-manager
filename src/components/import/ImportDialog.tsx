@@ -12,8 +12,7 @@ import {
 } from 'lucide-react';
 import { parsePdf } from '../../services/pdf-parser/PdfParserService';
 import { parseDepartmentFile } from '../../services/import-parser/DepartmentParserService';
-import { db } from '../../db/database';
-import { generateId } from '../../utils/id';
+import { api } from '../../lib/api';
 import { formatTime } from '../../utils/time';
 import { SERIES_COLORS, DEPARTMENTS } from '../../utils/constants';
 import type { PdfParseResult, ParsedScheduleEvent } from '../../types/pdf';
@@ -103,15 +102,8 @@ export function ImportDialog({ open, onClose, weekendId }: ImportDialogProps) {
   const handleIndycarImport = async () => {
     setImporting(true);
     try {
-      const existing = await db.masterEvents
-        .where('weekendId')
-        .equals(weekendId)
-        .toArray();
-      await db.masterEvents.bulkDelete(existing.map((e) => e.id));
-
-      const masterEvents: MasterScheduleEvent[] = pdfEvents.map((e) => ({
-        id: generateId(),
-        weekendId,
+      // bulkCreate on the API replaces all existing master events for this weekend
+      const masterEvents = pdfEvents.map((e) => ({
         day: e.day,
         startTime: e.startTime,
         endTime: e.endTime,
@@ -121,7 +113,7 @@ export function ImportDialog({ open, onClose, weekendId }: ImportDialogProps) {
         confidence: e.confidence,
       }));
 
-      await db.masterEvents.bulkAdd(masterEvents);
+      await api.masterEvents.bulkCreate(weekendId, masterEvents);
       setStep('done');
     } finally {
       setImporting(false);
@@ -131,24 +123,22 @@ export function ImportDialog({ open, onClose, weekendId }: ImportDialogProps) {
   const handleDeptImport = async () => {
     setImporting(true);
     try {
-      const now = new Date().toISOString();
-      const activities = deptItems.map((item) => ({
-        id: generateId(),
-        weekendId,
-        name: item.name,
-        departmentIds: selectedDepts,
-        personIds: [] as string[],
-        day: item.day,
-        startTime: item.startTime,
-        endTime: item.endTime,
-        location: '',
-        status: 'pending' as const,
-        notes: '',
-        createdAt: now,
-        updatedAt: now,
-      }));
+      // Create each activity via the API
+      const promises = deptItems.map((item) =>
+        api.activities.create(weekendId, {
+          name: item.name,
+          departmentIds: selectedDepts,
+          personIds: [],
+          day: item.day,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          location: '',
+          status: 'pending',
+          notes: '',
+        })
+      );
 
-      await db.activities.bulkAdd(activities);
+      await Promise.all(promises);
       setStep('done');
     } finally {
       setImporting(false);
