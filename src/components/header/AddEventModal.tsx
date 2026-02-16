@@ -32,6 +32,9 @@ export function AddEventModal({ open, onClose, onCreated }: AddEventModalProps) 
       onCreated(weekend.id);
       reset();
       onClose();
+    } catch (err) {
+      console.error('Failed to create event:', err);
+      alert('Failed to create event. Please try again.');
     } finally {
       setSaving(false);
     }
