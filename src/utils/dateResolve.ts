@@ -2,16 +2,15 @@ import { parseISO, addDays, setHours, setMinutes } from 'date-fns';
 import type { DayOfWeek } from '../types/schedule';
 
 const DAY_OFFSET: Record<DayOfWeek, number> = {
-  wednesday: 0,
-  thursday: 1,
-  friday: 2,
-  saturday: 3,
-  sunday: 4,
+  thursday: 0,
+  friday: 1,
+  saturday: 2,
+  sunday: 3,
 };
 
 /**
  * Convert a DayOfWeek + HH:mm time into an absolute Date
- * based on the weekend's start date (which should be the Wednesday).
+ * based on the weekend's start date (which should be the Thursday).
  */
 export function resolveActivityDate(
   weekendStartDate: string,

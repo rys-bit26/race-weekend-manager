@@ -40,7 +40,7 @@ async function parseDepartmentPdf(fileData: ArrayBuffer): Promise<DepartmentPars
       if (day) {
         currentDay = day;
         // Check if the line also has a time range after the day name
-        const afterDay = line.text.replace(/(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s*/i, '').trim();
+        const afterDay = line.text.replace(/(?:monday|tuesday|thursday|friday|saturday|sunday)\s*/i, '').trim();
         if (afterDay) {
           const parsed = parseTimedLine(afterDay, currentDay);
           if (parsed) items.push(parsed);

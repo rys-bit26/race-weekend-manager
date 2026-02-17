@@ -1,4 +1,4 @@
-export type DayOfWeek = 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+export type DayOfWeek = 'thursday' | 'friday' | 'saturday' | 'sunday';
 
 export type SeriesType =
   | 'INDYCAR'

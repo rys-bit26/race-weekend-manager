@@ -228,14 +228,6 @@ function makeSeedActivities(people: Person[]): Activity[] {
   const now = new Date().toISOString();
 
   return [
-    // Wednesday
-    {
-      id: generateId(), weekendId: STPETE_ID, name: 'Hospitality Suite Setup',
-      departmentIds: ['brand-experiences'],
-      personIds: getPeople('brand-experiences').map((p) => p.id),
-      day: 'wednesday', startTime: '10:00', endTime: '16:00', location: 'Hospitality',
-      status: 'confirmed', notes: 'Full hospitality suite setup - furniture, signage, AV equipment', createdAt: now, updatedAt: now,
-    },
     // Thursday
     {
       id: generateId(), weekendId: STPETE_ID, name: 'Transporter Setup & Branding',

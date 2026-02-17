@@ -32,15 +32,14 @@ interface IcsMasterEvent {
 }
 
 /**
- * Map day-of-week to offset from the weekend startDate (Wednesday = 0).
- * Assumes the weekend starts on a Wednesday.
+ * Map day-of-week to offset from the weekend startDate (Thursday = 0).
+ * Assumes the weekend starts on a Thursday.
  */
 const DAY_OFFSETS: Record<string, number> = {
-  wednesday: 0,
-  thursday: 1,
-  friday: 2,
-  saturday: 3,
-  sunday: 4,
+  thursday: 0,
+  friday: 1,
+  saturday: 2,
+  sunday: 3,
 };
 
 function resolveDate(weekendStartDate: string, day: string, time: string): string {

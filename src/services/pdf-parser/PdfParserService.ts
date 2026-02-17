@@ -89,8 +89,8 @@ function detectColumns(items: PdfTextItem[]): ColumnInfo[] {
   // Sort columns by x position
   const sortedDays = [...uniqueDays.entries()].sort((a, b) => a[1].x - b[1].x);
 
-  // Filter to only Wed-Sun
-  const targetDays: DayOfWeek[] = ['wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  // Filter to only Thu-Sun
+  const targetDays: DayOfWeek[] = ['thursday', 'friday', 'saturday', 'sunday'];
   const filteredDays = sortedDays.filter(([day]) => targetDays.includes(day));
 
   if (filteredDays.length === 0) return [];

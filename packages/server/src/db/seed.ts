@@ -102,7 +102,6 @@ async function main() {
   const execPeople = [P.markMyers, P.jillGregory, P.danTowriss];
 
   await db.insert(schema.activities).values([
-    { id: crypto.randomUUID(), weekendId: STPETE_ID, name: 'Hospitality Suite Setup', departmentIds: ['brand-experiences'], personIds: bxPeople, day: 'wednesday', startTime: '10:00', endTime: '16:00', location: 'Hospitality', status: 'confirmed', notes: 'Full hospitality suite setup', createdAt: now, updatedAt: now },
     { id: crypto.randomUUID(), weekendId: STPETE_ID, name: 'Transporter Setup & Branding', departmentIds: ['brand-experiences', 'partnerships'], personIds: [P.stephanieHeinz, P.richieBest, P.elizabethWood, P.tannerHiggins], day: 'thursday', startTime: '09:00', endTime: '12:00', location: 'Paddock', status: 'confirmed', notes: 'Sponsor signage placement', createdAt: now, updatedAt: now },
     { id: crypto.randomUUID(), weekendId: STPETE_ID, name: 'Driver Headshots & Portrait Session', departmentIds: ['photography', 'drivers'], personIds: [...photoPeople, ...driverPeople], day: 'thursday', startTime: '13:00', endTime: '15:00', location: 'Garage', status: 'confirmed', notes: 'Updated headshots for all three drivers', createdAt: now, updatedAt: now },
     { id: crypto.randomUUID(), weekendId: STPETE_ID, name: 'Content Planning Meeting', departmentIds: ['social-content', 'photography'], personIds: [...scPeople, ...photoPeople], day: 'thursday', startTime: '15:30', endTime: '16:30', location: 'Transporter', status: 'confirmed', notes: 'Walk through weekend content plan', createdAt: now, updatedAt: now },

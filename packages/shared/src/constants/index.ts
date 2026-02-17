@@ -16,7 +16,6 @@ export const DEPARTMENT_MAP: Record<DepartmentId, Department> = Object.fromEntri
 ) as Record<DepartmentId, Department>;
 
 export const DAYS: { id: DayOfWeek; label: string; shortLabel: string }[] = [
-  { id: 'wednesday', label: 'Wednesday', shortLabel: 'Wed' },
   { id: 'thursday', label: 'Thursday', shortLabel: 'Thu' },
   { id: 'friday', label: 'Friday', shortLabel: 'Fri' },
   { id: 'saturday', label: 'Saturday', shortLabel: 'Sat' },

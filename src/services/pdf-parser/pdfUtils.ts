@@ -9,7 +9,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 export const DAY_PATTERNS: { day: DayOfWeek; patterns: RegExp[] }[] = [
-  { day: 'wednesday', patterns: [/wednesday/i, /\bwed\b/i] },
   { day: 'thursday', patterns: [/thursday/i, /\bthu/i] },
   { day: 'friday', patterns: [/friday/i, /\bfri\b/i] },
   { day: 'saturday', patterns: [/saturday/i, /\bsat\b/i] },

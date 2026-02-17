@@ -150,9 +150,8 @@ export function NotificationPreferencesModal({
     return grouped;
   }, [activities]);
 
-  const dayOrder = ['wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  const dayOrder = ['thursday', 'friday', 'saturday', 'sunday'];
   const dayLabels: Record<string, string> = {
-    wednesday: 'Wednesday',
     thursday: 'Thursday',
     friday: 'Friday',
     saturday: 'Saturday',

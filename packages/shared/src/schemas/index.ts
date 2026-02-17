@@ -3,7 +3,7 @@ import { z } from 'zod';
 // ── Day / Series / Status enums ──
 
 export const dayOfWeekSchema = z.enum([
-  'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+  'thursday', 'friday', 'saturday', 'sunday',
 ]);
 
 export const seriesTypeSchema = z.enum([
