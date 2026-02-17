@@ -56,6 +56,21 @@ export class ScheduleDatabase extends Dexie {
       notificationSubscriptions: 'id, personId, weekendId, activityId, enabled',
       firedNotifications: 'id, subscriptionId, activityId, channel, read',
     });
+
+    // v5: remove Wednesday — clear all data so seed re-runs without Wed activities
+    this.version(5).stores({
+      raceWeekends: 'id, name, startDate',
+      masterEvents: 'id, weekendId, day, startTime, series',
+      activities: 'id, weekendId, day, startTime, status, *departmentIds, *personIds',
+      people: 'id, departmentId, name',
+      notificationSubscriptions: 'id, personId, weekendId, activityId, enabled',
+      firedNotifications: 'id, subscriptionId, activityId, channel, read',
+    }).upgrade(async (tx) => {
+      await tx.table('raceWeekends').clear();
+      await tx.table('masterEvents').clear();
+      await tx.table('activities').clear();
+      await tx.table('people').clear();
+    });
   }
 }
 
