@@ -12,7 +12,7 @@ interface ActivityModalProps {
   open: boolean;
   onClose: () => void;
   onSave: (data: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  onDelete?: () => void;
+  onDelete?: () => void | Promise<void>;
   activity?: Activity | null;
   people: Person[];
   weekendId: string;
@@ -335,9 +335,9 @@ export function ActivityModal({
             {onDelete && (
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   if (confirm('Delete this activity?')) {
-                    onDelete();
+                    await onDelete();
                     onClose();
                   }
                 }}

@@ -385,8 +385,8 @@ function App() {
             }}
             onDelete={
               editingActivity
-                ? () => {
-                    deleteActivity(editingActivity.id);
+                ? async () => {
+                    await deleteActivity(editingActivity.id);
                   }
                 : undefined
             }
